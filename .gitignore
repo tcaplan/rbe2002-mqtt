@@ -2,4 +2,5 @@
 .vscode
 # platformio.ini
 # examples/esp32-wifi-uart/platformio.ini
-src/wifi_credentials.h
+src/mqtt/wifi_credentials.h
+.env

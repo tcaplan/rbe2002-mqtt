@@ -107,7 +107,7 @@ void setup()
 
     Serial.println("setup()");
 
-    Serial2.begin(115200);
+    Serial2.begin(115200, SERIAL_8N1, 18, 19);
 
     /**
      * Sets the callback function that gets called for every message received from the broker.

@@ -1,7 +1,13 @@
 #include <Arduino.h>
 #include <Button.h>
+#include "sensors/IR_sensor.h"
+#include "sensors/Sonar_sensor.h"
+#include "sensors/IMU.h"
 
 Button buttonA(14);
+IRsensor ir;
+SonarSensor sonar;
+IMU_sensor imu_sensor;
 
 /**
  * sendMessage creates a string of the form
@@ -40,7 +46,11 @@ void setup()
     Serial1.begin(115200);
     digitalWrite(0, HIGH); // Set internal pullup on RX1 to avoid spurious signals
 
+    // Initialize Sensors
     buttonA.init();
+    ir.Init();
+    sonar.Init();
+    imu_sensor.Init();
 
     Serial.println("/setup()");
 }
@@ -54,10 +64,13 @@ void loop()
 {
     static uint32_t lastSend = 0;
     uint32_t currTime = millis();
-    if(currTime - lastSend >= 5000) //send every five seconds
+    if(currTime - lastSend >= 1000) //send every one second
     {
         lastSend = currTime;
         sendMessage("timer/time", String(currTime));
+        sendMessage("sensors/ir", String(ir.ReadData()));
+        sendMessage("sensors/sonar", String(sonar.ReadData()));
+        sendMessage("sensors/imu", String(imu_sensor.ReadAcceleration().Z));
     }
 
     // Check to see if we've received anything

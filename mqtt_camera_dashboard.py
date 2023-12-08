@@ -9,7 +9,7 @@ load_dotenv()
 broker = os.getenv('MQTT_SERVER')
 port = int(os.getenv('MQTT_PORT'))
 topic = "team5"
-topic_sub = "team5/dashboard/#"
+topic_sub = "theIlluminati/#"
 # generate client ID with pub prefix randomly
 username = os.getenv('MQTT_USER')
 password = os.getenv('MQTT_PASS')
@@ -44,28 +44,37 @@ def publish(client,status):
 def subscribe(client: mqtt_client):
     def on_message(client, userdata, msg):
 
-        # looking for the topic team5/dashboard/ID where ID is the ID number of the romi
-        # then looks for 4 numbers spaced by spaces (cx cy w h)
-        # example: team5/dashboard/5:10 20 5 5
+        topic = msg.topic.split('/')
+        if topic_sub[0:-2] in topic and len(topic) == 3:
+            tagNum = topic[1]
+            attribute = topic[2]
+            # update the location
+            if tagNum not in tags.keys():
+                # create the tag
+                tags[tagNum] = {}
+            tags[tagNum][attribute] = float(msg.payload.decode())
 
-        if len(msg.topic) > len(topic_sub)-1 and msg.topic[0:len(topic_sub)-1] == topic_sub[0:-1]:
-            # get the ID of the romi
-            id = msg.topic[len(topic_sub)-1:]
-            payload = msg.payload.decode()
-            [x, y, w, h] = list(map(int, payload.split(' ')))
-            # print("received:", id, x, y, w, h)
-            x1, y1, x2, y2 = (x-w/2) * mult, (y-h/2) * mult, (x+w/2) * mult, (y+h/2) * mult
-            if id in ids.keys():
-                canvas.coords(ids[id]['rect'], x1, y1, x2, y2)
-                canvas.coords(ids[id]['text'], x*mult, y*mult)
-            else:
-                ids[id] = {}
-                ids[id]['rect'] = canvas.create_rectangle(x1, y1, x2, y2, fill="black")
-                ids[id]['text'] = canvas.create_text(x*mult, y*mult, text=str(id), fill="white")
+            if len(tags[tagNum]) == 6:
+                x = tags[tagNum]['x']
+                y = tags[tagNum]['y']
+                w = tags[tagNum]['w']
+                h = tags[tagNum]['h']
+                id = tags[tagNum]['id']
+                x1, y1, x2, y2 = (x-w/2) * mult, (y-h/2) * mult, (x+w/2) * mult, (y+h/2) * mult
+                tags[tagNum]['rect'] = canvas.create_rectangle(x1, y1, x2, y2, fill="black")
+                tags[tagNum]['text'] = canvas.create_text(x*mult, y*mult, text=str(int(id)), fill="white")
+            elif len(tags[tagNum]) > 6:
+                x = tags[tagNum]['x']
+                y = tags[tagNum]['y']
+                w = tags[tagNum]['w']
+                h = tags[tagNum]['h']
+                id = tags[tagNum]['id']
+                x1, y1, x2, y2 = (x-w/2) * mult, (y-h/2) * mult, (x+w/2) * mult, (y+h/2) * mult
+                canvas.coords(tags[tagNum]['rect'], x1, y1, x2, y2)
+                canvas.coords(tags[tagNum]['text'], x*mult, y*mult)
 
     client.subscribe(topic_sub)
     client.on_message = on_message
-
 
 window = Tk()
 window.title("MQTT Camera Dashboard")
@@ -79,7 +88,16 @@ window.configure(bg="white")
 canvas = Canvas(window, bg="white", width=win_w*mult,height=win_h*mult)
 canvas.place(x=0,y=0)
 
-ids = {}
+canvas.create_line(win_w*mult, 18*mult, 0, 18*mult)
+canvas.create_line(win_w*mult, 50*mult, 0, 50*mult)
+canvas.create_line(win_w*mult, 84*mult, 0, 84*mult)
+canvas.create_line(158*mult, win_h*mult, 158*mult, 0)
+canvas.create_line(126*mult, win_h*mult, 126*mult, 0)
+canvas.create_line(94*mult, win_h*mult, 94*mult, 0)
+canvas.create_line(62*mult, win_h*mult, 62*mult, 0)
+canvas.create_line(30*mult, win_h*mult, 30*mult, 0)
+
+tags = {}
 
 # Connect
 client = connect_mqtt()

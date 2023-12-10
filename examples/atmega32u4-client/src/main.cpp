@@ -67,10 +67,10 @@ void loop()
     if(currTime - lastSend >= 1000) //send every one second
     {
         lastSend = currTime;
-        sendMessage("timer/time", String(currTime));
-        sendMessage("sensors/ir", String(ir.ReadData()));
-        sendMessage("sensors/sonar", String(sonar.ReadData()));
-        sendMessage("sensors/imu", String(imu_sensor.ReadAcceleration().Z));
+        sendMessage("timer/time", String(currTime)); // print the time
+        sendMessage("sensors/ir", String(ir.ReadData())); // get the IR distance reading
+        sendMessage("sensors/sonar", String(sonar.ReadData())); // get the Sonar distance reading
+        sendMessage("sensors/imu", String(imu_sensor.ReadAcceleration().Z)); // get the IMU Z axis reading
     }
 
     // Check to see if we've received anything
